@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学習記録カレンダー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- メインコンテナ -->
+    <div class="container">
+        <!-- カレンダーヘッダー：年月選択 -->
+        <div class="calendar-header">
+            <button id="prevMonth">&lt;</button>
+            <div class="date-selector">
+                <select id="yearSelect"></select>
+                <select id="monthSelect"></select>
+            </div>
+            <button id="nextMonth">&gt;</button>
+        </div>
+
+        <!-- カレンダー本体 -->
+        <div class="calendar-body">
+            <!-- 曜日の表示行 -->
+            <div class="weekdays">
+                <div>日</div>
+                <div>月</div>
+                <div>火</div>
+                <div>水</div>
+                <div>木</div>
+                <div>金</div>
+                <div>土</div>
+            </div>
+            <!-- 日付表示グリッド -->
+            <div id="calendar"></div>
+        </div>
+
+        <!-- 月間学習集計 -->
+        <div class="monthly-summary">
+            <h3>月間学習集計</h3>
+            <div class="summary-content">
+                <div class="total-hours">
+                    <span>合計学習時間：</span>
+                    <span id="monthlyTotalHours">0</span>
+                    <span>時間</span>
+                </div>
+                <div class="study-days">
+                    <span>学習日数：</span>
+                    <span id="monthlyStudyDays">0</span>
+                    <span>日</span>
+                </div>
+            </div>
+            <!-- タグ分布グラフを追加 -->
+            <div class="tag-distribution">
+                <h4>タグ別学習時間分布</h4>
+                <div class="chart-container">
+                    <canvas id="tagDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- タグ管理セクション -->
+        <div class="tag-management">
+            <h3>タグの管理</h3>
+            <div class="tag-register">
+                <input type="text" 
+                       id="newTagInput" 
+                       placeholder="新しいタグを入力">
+                <button id="addNewTag">タグを追加</button>
+            </div>
+            <div id="registeredTags" class="registered-tags"></div>
+        </div>
+
+        <!-- 学習記録入力モーダル -->
+        <div id="studyFormModal" class="modal">
+            <div class="modal-content">
+                <h2>学習記録</h2>
+                <p id="selectedDate"></p>
+
+                <!-- 学習時間入力 -->
+                <div class="form-group">
+                    <label for="studyHours">学習時間（時間）:</label>
+                    <select id="studyHours">
+                        <option value="">選択してください</option>
+                        <!-- 0.5時間から24時間までの選択肢 -->
+                        <!-- script.jsで動的に生成 -->
+                    </select>
+                </div>
+
+                <!-- タグ選択 -->
+                <div class="form-group">
+                    <label>タグ:</label>
+                    <div id="tagContainer" class="tag-container"></div>
+                </div>
+
+                <!-- メモ入力 -->
+                <div class="form-group">
+                    <label for="studyMemo">メモ:</label>
+                    <textarea id="studyMemo"></textarea>
+                </div>
+
+                <!-- 操作ボタン群 -->
+                <div class="button-group">
+                    <button id="saveRecord">保存</button>
+                    <button id="deleteRecord" class="delete-btn">削除</button>
+                    <button id="closeModal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js の読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

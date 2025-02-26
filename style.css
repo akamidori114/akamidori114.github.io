@@ -1,0 +1,260 @@
+/* ベースレイアウト */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* カレンダーヘッダー */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.date-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.date-selector select {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* カレンダー本体 */
+.calendar-body {
+    margin-bottom: 30px;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    padding: 10px 0;
+}
+
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+/* 日付セル */
+.calendar-day {
+    border: 1px solid #ddd;
+    padding: 10px;
+    min-height: 80px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.calendar-day:hover {
+    background-color: #f5f5f5;
+}
+
+.has-record {
+    background-color: #e6f3ff;
+}
+
+/* 学習記録表示 */
+.study-hours, .study-memo {
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.study-memo {
+    color: #666;
+}
+
+.calendar-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 3px;
+}
+
+.calendar-tag {
+    background-color: #e0e0ff;
+    border-radius: 10px;
+    padding: 1px 5px;
+    font-size: 10px;
+}
+
+/* 月間集計セクション */
+.monthly-summary {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+}
+
+.total-hours, .study-days {
+    font-size: 1.1em;
+    padding: 10px;
+    background-color: white;
+    border-radius: 6px;
+    min-width: 200px;
+    text-align: center;
+}
+
+#monthlyTotalHours, #monthlyStudyDays {
+    font-weight: bold;
+    color: #4CAF50;
+    margin: 0 5px;
+}
+
+/* タグ管理セクション */
+.tag-management {
+    margin-top: 30px;
+    padding: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.tag-register {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tag-register input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.registered-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.registered-tag {
+    background-color: #e0e0ff;
+    border-radius: 15px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+/* モーダルウィンドウ */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+}
+
+/* フォーム要素 */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px;
+}
+
+.tag-option {
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tag-option.selected {
+    background-color: #e0e0ff;
+}
+
+/* ボタン */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.button-group button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background-color: #ff4444;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #cc0000;
+}
+
+/* タグ分布グラフ */
+.tag-distribution {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.tag-distribution h4 {
+    margin: 0 0 15px 0;
+    text-align: center;
+    color: #333;
+}
+
+.chart-container {
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+}
