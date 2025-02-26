@@ -9,6 +9,18 @@
 <body>
     <!-- メインコンテナ -->
     <div class="container">
+        <!-- タグ管理セクション -->
+        <div class="tag-management">
+            <h3>タグの管理</h3>
+            <div class="tag-register">
+                <input type="text" 
+                       id="newTagInput" 
+                       placeholder="新しいタグを入力">
+                <button id="addNewTag">タグを追加</button>
+            </div>
+            <div id="registeredTags" class="registered-tags"></div>
+        </div>
+
         <!-- カレンダーヘッダー：年月選択 -->
         <div class="calendar-header">
             <button id="prevMonth">&lt;</button>
@@ -57,18 +69,6 @@
                     <canvas id="tagDistributionChart"></canvas>
                 </div>
             </div>
-        </div>
-
-        <!-- タグ管理セクション -->
-        <div class="tag-management">
-            <h3>タグの管理</h3>
-            <div class="tag-register">
-                <input type="text" 
-                       id="newTagInput" 
-                       placeholder="新しいタグを入力">
-                <button id="addNewTag">タグを追加</button>
-            </div>
-            <div id="registeredTags" class="registered-tags"></div>
         </div>
 
         <!-- 学習記録入力モーダル -->
