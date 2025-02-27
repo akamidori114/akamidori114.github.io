@@ -215,7 +215,7 @@ function initializeTagManagement() {
         const tagText = newTagInput.value.trim();
         if (tagText && !registeredTags.includes(tagText)) {
             registeredTags.push(tagText);
-            localStorage.setItem('registeredTags', JSON.stringify(registeredTags));
+            secureStorage.setItem('registeredTags', registeredTags);
             displayRegisteredTags();
             newTagInput.value = '';
         }
@@ -240,7 +240,7 @@ function displayRegisteredTags() {
         tagElement.querySelector('.tag-delete').addEventListener('click', () => {
             if (confirm(`タグ「${tag}」を削除してもよろしいですか？`)) {
                 registeredTags = registeredTags.filter(t => t !== tag);
-                localStorage.setItem('registeredTags', JSON.stringify(registeredTags));
+                secureStorage.setItem('registeredTags', registeredTags);
                 displayRegisteredTags();
             }
         });
