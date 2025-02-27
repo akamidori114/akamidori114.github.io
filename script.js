@@ -1,11 +1,106 @@
 /**
+ * セキュアなストレージ管理
+ */
+const secureStorage = {
+    encryptData: function(data) {
+        // 簡易的な暗号化（実際の実装ではより強力な暗号化を使用）
+        return btoa(JSON.stringify(data));
+    },
+
+    decryptData: function(encrypted) {
+        try {
+            return JSON.parse(atob(encrypted));
+        } catch (e) {
+            console.error('データの復号化に失敗しました');
+            return null;
+        }
+    },
+
+    setItem: function(key, value) {
+        try {
+            const encrypted = this.encryptData(value);
+            localStorage.setItem(key, encrypted);
+            return true;
+        } catch (e) {
+            console.error('データの保存に失敗しました:', e);
+            return false;
+        }
+    },
+
+    getItem: function(key) {
+        try {
+            const encrypted = localStorage.getItem(key);
+            if (!encrypted) return null;
+            return this.decryptData(encrypted);
+        } catch (e) {
+            console.error('データの取得に失敗しました:', e);
+            return null;
+        }
+    }
+};
+
+/**
+ * データ整合性チェック
+ */
+const dataValidator = {
+    validateStudyRecord: function(record) {
+        if (!record) throw new Error('記録が空です');
+        
+        // 学習時間の検証
+        if (!record.hours || 
+            typeof record.hours !== 'number' || 
+            record.hours < 0.5 || 
+            record.hours > 24) {
+            throw new Error('不正な学習時間です');
+        }
+
+        // タグの検証
+        if (record.tags && !Array.isArray(record.tags)) {
+            throw new Error('不正なタグ形式です');
+        }
+
+        // メモの検証
+        if (record.memo && typeof record.memo !== 'string') {
+            throw new Error('不正なメモ形式です');
+        }
+
+        return true;
+    },
+
+    validateTags: function(tags) {
+        if (!Array.isArray(tags)) throw new Error('不正なタグリスト形式です');
+        
+        tags.forEach(tag => {
+            if (typeof tag !== 'string') throw new Error('不正なタグ形式です');
+            if (tag.length > 20) throw new Error('タグが長すぎます');
+            if (tag.length === 0) throw new Error('空のタグは許可されていません');
+        });
+
+        return true;
+    }
+};
+
+/**
+ * エラーハンドリング
+ */
+const errorHandler = {
+    showError: function(message) {
+        alert('エラー: ' + message);
+    },
+
+    logError: function(error, context) {
+        console.error(`エラー [${context}]:`, error);
+    }
+};
+
+/**
  * グローバル変数の初期化
  */
 let currentDate = new Date();
 let currentMonth = currentDate.getMonth();
 let currentYear = currentDate.getFullYear();
-let studyRecords = JSON.parse(localStorage.getItem('studyRecords')) || {};
-let registeredTags = JSON.parse(localStorage.getItem('registeredTags')) || [];
+let studyRecords = secureStorage.getItem('studyRecords') || {};
+let registeredTags = secureStorage.getItem('registeredTags') || [];
 let tagDistributionChart = null;
 
 /**
@@ -243,22 +338,38 @@ function setupFormEventListeners(modal, dateStr) {
  * 学習記録の保存
  */
 function saveStudyRecord(modal, dateStr) {
-    const studyHours = document.getElementById('studyHours');
-    const studyMemo = document.getElementById('studyMemo');
-    const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
-        .map(tag => tag.textContent);
-    
-    if (studyHours.value) {
-        studyRecords[dateStr] = {
+    try {
+        const studyHours = document.getElementById('studyHours');
+        const studyMemo = document.getElementById('studyMemo');
+        const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
+            .map(tag => tag.textContent);
+
+        if (!studyHours.value) {
+            throw new Error('学習時間を選択してください');
+        }
+
+        const record = {
             hours: parseFloat(studyHours.value),
             memo: studyMemo.value,
             tags: selectedTags
         };
-        localStorage.setItem('studyRecords', JSON.stringify(studyRecords));
+
+        // データ検証
+        dataValidator.validateStudyRecord(record);
+        
+        studyRecords[dateStr] = record;
+        
+        // 暗号化して保存
+        if (!secureStorage.setItem('studyRecords', studyRecords)) {
+            throw new Error('データの保存に失敗しました');
+        }
+
         modal.style.display = 'none';
         generateCalendar();
-    } else {
-        alert('学習時間を選択してください');
+
+    } catch (error) {
+        errorHandler.logError(error, 'saveStudyRecord');
+        errorHandler.showError(error.message);
     }
 }
 
