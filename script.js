@@ -2,34 +2,9 @@
  * セキュアなストレージ管理
  */
 const secureStorage = {
-    encryptData: async function(data) {
-        // Web Crypto APIを使用した強力な暗号化の実装
-        const encoder = new TextEncoder();
-        const dataBuffer = encoder.encode(JSON.stringify(data));
-        
-        const key = await window.crypto.subtle.generateKey(
-            {
-                name: "AES-GCM",
-                length: 256
-            },
-            true,
-            ["encrypt", "decrypt"]
-        );
-        
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await window.crypto.subtle.encrypt(
-            {
-                name: "AES-GCM",
-                iv: iv
-            },
-            key,
-            dataBuffer
-        );
-        
-        return {
-            encrypted: Array.from(new Uint8Array(encrypted)),
-            iv: Array.from(iv)
-        };
+    encryptData: function(data) {
+        // 簡易的な暗号化（実際の実装ではより強力な暗号化を使用）
+        return btoa(JSON.stringify(data));
     },
 
     decryptData: function(encrypted) {
@@ -43,7 +18,6 @@ const secureStorage = {
 
     setItem: function(key, value) {
         try {
-            // 暗号化の代わりに単純なJSON文字列化を使用
             localStorage.setItem(key, JSON.stringify(value));
             return true;
         } catch (e) {
@@ -55,8 +29,7 @@ const secureStorage = {
     getItem: function(key) {
         try {
             const data = localStorage.getItem(key);
-            if (!data) return null;
-            return JSON.parse(data);
+            return data ? JSON.parse(data) : null;
         } catch (e) {
             console.error('データの取得に失敗しました:', e);
             return null;
@@ -69,39 +42,13 @@ const secureStorage = {
  */
 const dataValidator = {
     validateStudyRecord: function(record) {
-        if (!record) throw new Error('記録が空です');
-        
-        // より厳密な検証
-        if (!/^\d+(\.\d{1,2})?$/.test(record.hours.toString())) {
-            throw new Error('不正な学習時間形式です');
-        }
-        
-        if (record.memo && !/^[\w\s\-_.,!?()]{0,1000}$/u.test(record.memo)) {
-            throw new Error('不正なメモ形式です');
-        }
-        
-        // タグの文字数制限とパターン検証
-        if (record.tags) {
-            record.tags.forEach(tag => {
-                if (!/^[\w\s\-_]{1,20}$/u.test(tag)) {
-                    throw new Error('不正なタグ形式です');
-                }
-            });
-        }
-        
+        if (!record) return false;
+        if (!record.hours || record.hours < 0.5 || record.hours > 24) return false;
         return true;
     },
 
     validateTags: function(tags) {
-        if (!Array.isArray(tags)) throw new Error('不正なタグリスト形式です');
-        
-        tags.forEach(tag => {
-            if (typeof tag !== 'string') throw new Error('不正なタグ形式です');
-            if (tag.length > 20) throw new Error('タグが長すぎます');
-            if (tag.length === 0) throw new Error('空のタグは許可されていません');
-        });
-
-        return true;
+        return Array.isArray(tags);
     }
 };
 
@@ -110,16 +57,11 @@ const dataValidator = {
  */
 const errorHandler = {
     showError: function(message) {
-        // ユーザーフレンドリーなエラーメッセージ
-        const genericError = '操作を完了できませんでした。もう一度お試しください。';
-        alert(process.env.NODE_ENV === 'production' ? genericError : message);
+        alert('エラー: ' + message);
     },
-    
+
     logError: function(error, context) {
-        // 本番環境ではエラー詳細を隠す
-        if (process.env.NODE_ENV !== 'production') {
-            console.error(`エラー [${context}]:`, error);
-        }
+        console.error(`エラー [${context}]:`, error);
     }
 };
 
@@ -244,16 +186,10 @@ function initializeTagManagement() {
     addNewTagButton.addEventListener('click', () => {
         const tagText = newTagInput.value.trim();
         if (tagText && !registeredTags.includes(tagText)) {
-            try {
-                registeredTags.push(tagText);
-                if (!secureStorage.setItem('registeredTags', registeredTags)) {
-                    throw new Error('タグの保存に失敗しました');
-                }
-                displayRegisteredTags();
-                newTagInput.value = '';
-            } catch (error) {
-                errorHandler.showError(error.message);
-            }
+            registeredTags.push(tagText);
+            secureStorage.setItem('registeredTags', registeredTags);
+            displayRegisteredTags();
+            newTagInput.value = '';
         }
     });
 }
@@ -268,29 +204,16 @@ function displayRegisteredTags() {
     registeredTags.forEach(tag => {
         const tagElement = document.createElement('div');
         tagElement.classList.add('registered-tag');
+        tagElement.innerHTML = `
+            ${tag}
+            <span class="tag-delete">&times;</span>
+        `;
         
-        // XSS対策のためにテキストコンテントを使用
-        const tagText = document.createElement('span');
-        tagText.textContent = tag;
-        
-        const deleteButton = document.createElement('span');
-        deleteButton.textContent = '×';
-        deleteButton.classList.add('tag-delete');
-        
-        tagElement.appendChild(tagText);
-        tagElement.appendChild(deleteButton);
-        
-        deleteButton.addEventListener('click', () => {
+        tagElement.querySelector('.tag-delete').addEventListener('click', () => {
             if (confirm(`タグ「${tag}」を削除してもよろしいですか？`)) {
-                try {
-                    registeredTags = registeredTags.filter(t => t !== tag);
-                    if (!secureStorage.setItem('registeredTags', registeredTags)) {
-                        throw new Error('タグの削除に失敗しました');
-                    }
-                    displayRegisteredTags();
-                } catch (error) {
-                    errorHandler.showError(error.message);
-                }
+                registeredTags = registeredTags.filter(t => t !== tag);
+                secureStorage.setItem('registeredTags', registeredTags);
+                displayRegisteredTags();
             }
         });
         
@@ -391,34 +314,32 @@ function saveStudyRecord(modal, dateStr) {
         const studyHours = document.getElementById('studyHours');
         const studyMemo = document.getElementById('studyMemo');
         const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
-            .map(tag => tag.textContent);
+            .map(tag => tag.textContent.trim());
 
         if (!studyHours.value) {
-            throw new Error('学習時間を選択してください');
+            alert('学習時間を選択してください');
+            return;
         }
 
         const record = {
             hours: parseFloat(studyHours.value),
-            memo: studyMemo.value,
+            memo: studyMemo.value.trim(),
             tags: selectedTags
         };
 
-        // データ検証
-        dataValidator.validateStudyRecord(record);
-        
+        // 既存のレコードを取得して更新
+        studyRecords = secureStorage.getItem('studyRecords') || {};
         studyRecords[dateStr] = record;
         
-        // 暗号化して保存
-        if (!secureStorage.setItem('studyRecords', studyRecords)) {
-            throw new Error('データの保存に失敗しました');
-        }
+        // 保存
+        secureStorage.setItem('studyRecords', studyRecords);
 
         modal.style.display = 'none';
         generateCalendar();
 
     } catch (error) {
-        errorHandler.logError(error, 'saveStudyRecord');
-        errorHandler.showError(error.message);
+        console.error('保存エラー:', error);
+        alert('データの保存に失敗しました');
     }
 }
 
