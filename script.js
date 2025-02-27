@@ -214,10 +214,16 @@ function initializeTagManagement() {
     addNewTagButton.addEventListener('click', () => {
         const tagText = newTagInput.value.trim();
         if (tagText && !registeredTags.includes(tagText)) {
-            registeredTags.push(tagText);
-            secureStorage.setItem('registeredTags', registeredTags);
-            displayRegisteredTags();
-            newTagInput.value = '';
+            try {
+                registeredTags.push(tagText);
+                if (!secureStorage.setItem('registeredTags', registeredTags)) {
+                    throw new Error('タグの保存に失敗しました');
+                }
+                displayRegisteredTags();
+                newTagInput.value = '';
+            } catch (error) {
+                errorHandler.showError(error.message);
+            }
         }
     });
 }
@@ -232,16 +238,29 @@ function displayRegisteredTags() {
     registeredTags.forEach(tag => {
         const tagElement = document.createElement('div');
         tagElement.classList.add('registered-tag');
-        tagElement.innerHTML = `
-            ${tag}
-            <span class="tag-delete">&times;</span>
-        `;
         
-        tagElement.querySelector('.tag-delete').addEventListener('click', () => {
+        // XSS対策のためにテキストコンテントを使用
+        const tagText = document.createElement('span');
+        tagText.textContent = tag;
+        
+        const deleteButton = document.createElement('span');
+        deleteButton.textContent = '×';
+        deleteButton.classList.add('tag-delete');
+        
+        tagElement.appendChild(tagText);
+        tagElement.appendChild(deleteButton);
+        
+        deleteButton.addEventListener('click', () => {
             if (confirm(`タグ「${tag}」を削除してもよろしいですか？`)) {
-                registeredTags = registeredTags.filter(t => t !== tag);
-                secureStorage.setItem('registeredTags', registeredTags);
-                displayRegisteredTags();
+                try {
+                    registeredTags = registeredTags.filter(t => t !== tag);
+                    if (!secureStorage.setItem('registeredTags', registeredTags)) {
+                        throw new Error('タグの削除に失敗しました');
+                    }
+                    displayRegisteredTags();
+                } catch (error) {
+                    errorHandler.showError(error.message);
+                }
             }
         });
         
